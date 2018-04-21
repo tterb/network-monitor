@@ -90,9 +90,9 @@ def log(down, up):
 # def sendSMS(msg):
 #   # Create client with Twilio Account SID and Auth Token
 #   # client = Client('ACf0fabfa03ef65b8fa267366f0ee496c1', 'a2294ea36a3029fbac5adfbd6b902456')  # Test
-#   client = Client('***REMOVED***', '***REMOVED***') # Not test
-#   # message = client.messages.create(body=msg, to='***REMOVED***', from_='+15005550006')
-#   message = client.messages.create(body=msg, to='***REMOVED***', from_='***REMOVED***')
+#   client = Client('ACf46cbb5d26b14a14ac8bb3b63954dc4d', '075c1400a0af529b0eb21ded9dbd78f7') # Not test
+#   # message = client.messages.create(body=msg, to='+12244360022', from_='+15005550006')
+#   message = client.messages.create(body=msg, to='+18476361145', from_='+12244360022')
 #   print(message.sid)
 
 
