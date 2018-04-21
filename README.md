@@ -1,6 +1,6 @@
-# Network Monitor
+<img src="https://user-images.githubusercontent.com/16360374/39081232-8f0e5384-44f2-11e8-83ac-59730ecd106a.png" height="100"/>
 
-This program is motivated by the feeling of not recieving the network performance advertised by your ISP. In response, this program aims to provide you with the data necessary to hold your ISP accountable for network downtimes and low performance.  
+This program is motivated by the feeling of not recieving the network performance advertised by your ISP. In response, this program aims to provide you with the data necessary to hold your ISP accountable for network downtimes and low performance.
 Additionally, this program can also inform you when your network goes down when you may not be home, which you can potentially be credited for depending on your ISP.
 
 ## Install
@@ -26,7 +26,7 @@ python network_monitor.py [-args]
 
 
 ## Setup
-For the most beneficial results, you should initially execute the program with the `--config` argument to set your target network upload and download speeds, which the program will then use for future processes.  
+For the most beneficial results, you should initially execute the program with the `--config` argument to set your target network upload and download speeds, which the program will then use for future processes.
 Additionally, if you'd like to setup the program to run on a schedule, you can do this on UNIX-based systems by creating a cron job with the following command:
 
 ```sh
