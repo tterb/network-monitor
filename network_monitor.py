@@ -1,7 +1,6 @@
 import sys, os, argparse, json, pyspeedtest, random
 from time import gmtime, strftime
 from twilio.rest import Client
-from colorama import init, Fore, Style
 from subprocess import check_output
 import pylab as plt
 
@@ -30,14 +29,14 @@ def main():
   # Get current data speeds
   try:
     current = test_speed()
-    if not network_status:
-      sendSMS('Your network is back online')
+    # if not network_status:
+    #   sendSMS('Your network is back online')
     network_status = True
   except:
     current = (0,0)
     network_status = False
-    sendSMS('Your network appears to be offline')
-    print(Fore.YELLOW+'Your network appears to be offline'+Style.RESET_ALL)
+    # sendSMS('Your network appears to be offline')
+    print('Your network appears to be offline')
 
   # Log current data speeds
   log(current[0], current[1])
@@ -56,9 +55,9 @@ def main():
     for j,i in enumerate(status):
       print(str(i[0].capitalize())+': ', end='')
       if 'below' in i:
-        print(Fore.RED+str(current[j])+' mbps'+Style.RESET_ALL)
+        print(str(current[j])+' mbps')
       else:
-        print(Fore.GREEN+str(current[j])+' mbps'+Style.RESET_ALL)
+        print(str(current[j])+' mbps')
 
   if args.graph:
     create_graph()
