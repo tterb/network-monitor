@@ -1,8 +1,10 @@
-import sys, os, argparse, json, pyspeedtest, random
+import sys, os, argparse, json, pyspeedtest, random, smtplib
+import pylab as plt
 from time import gmtime, strftime
 from twilio.rest import Client
 from subprocess import check_output
-import pylab as plt
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 def main():
@@ -26,43 +28,43 @@ def main():
     with open('config.json','w') as f:
       json.dump(target, f, indent=2)
 
+  if args.quiet:
+    sys.stdout = open(os.devnull, 'w')
+
   # Get current data speeds
   try:
     current = test_speed()
-    # if not network_status:
-    #   sendSMS('Your network is back online')
+    if not network_status:
+      sendEmail('Your network is back online')
     network_status = True
   except:
     current = (0,0)
     network_status = False
-    # sendSMS('Your network appears to be offline')
+    sendEmail('Your network appears to be offline')
     print('Your network appears to be offline')
 
   # Log current data speeds
   log(current[0], current[1])
 
-  if not args.quiet:
-    status = []
-    if current[0] < target['download']:
-      status.append(('download','below'))
-    else:
-      status.append(('download','above'))
-    if current[1] < target['upload']:
-      status.append(('upload','below'))
-    else:
-      status.append(('upload','above'))
+  status = []
+  if current[0] < target['download']:
+    status.append(('download','below'))
+  else:
+    status.append(('download','above'))
+  if current[1] < target['upload']:
+    status.append(('upload','below'))
+  else:
+    status.append(('upload','above'))
 
-    for j,i in enumerate(status):
-      print(str(i[0].capitalize())+': ', end='')
-      if 'below' in i:
-        print(str(current[j])+' mbps')
-      else:
-        print(str(current[j])+' mbps')
+  for j,i in enumerate(status):
+    print(str(i[0].capitalize())+': ', end='')
+    if 'below' in i:
+      print(str(current[j])+' mbps')
+    else:
+      print(str(current[j])+' mbps')
 
   if args.graph:
     create_graph()
-    sys.exit()
-
 
 def test_speed():
   speed = pyspeedtest.SpeedTest()
@@ -70,30 +72,42 @@ def test_speed():
 
 
 def config():
-  download = float(input('Download (mbps): '))
-  upload = float(input('Upload (mbps): '))
-  return {'download': download, 'upload': upload}
+  conf['download'] = float(input('Download (mbps): '))
+  conf['upload'] = float(input('Upload (mbps): '))
+  if 'y' in input('Enable email notifications? (y/n): ').lower():
+    conf['email'] = input('Email address: ')
+    conf['password'] = input('password: ')
+  return conf
 
 
 def log(down, up):
-  # print(datetime.datetime.now().strftime("%Y-%m-%d_%H:%M"))
-  with open('log.json','r') as f:
-    log = json.load(f)
-  while len(log.keys()) >= 720:
-    del log[log.keys()[0]]
+  if os.path.exists('log.json'):
+    with open('log.json','r') as f:
+      log = json.load(f)
+  else:
+    log = {}
   now = strftime("%Y-%m-%d_%H:%M", gmtime())
-  log[now] = [down, up]
+  log[now] = (down, up)
   with open('log.json','w') as f:
     json.dump(log, f, indent=2)
 
 
-# def sendSMS(msg):
-#   # Create client with Twilio Account SID and Auth Token
-#   # client = Client('ACf0fabfa03ef65b8fa267366f0ee496c1', 'a2294ea36a3029fbac5adfbd6b902456')  # Test
-#   client = Client('ACf46cbb5d26b14a14ac8bb3b63954dc4d', '075c1400a0af529b0eb21ded9dbd78f7') # Not test
-#   # message = client.messages.create(body=msg, to='+12244360022', from_='+15005550006')
-#   message = client.messages.create(body=msg, to='+18476361145', from_='+12244360022')
-#   print(message.sid)
+def sendEmail(body):
+  with open('config.json','r') as f:
+    config = json.load(f)
+  if 'email' not in config:
+    print("Email functionality has not been configured. If you'd like to enable this functionality, run the program with the '--config' option.")
+    sys.exit()
+  addr = config['email']
+  msg = MIMEText(body)
+  msg['From'] = addr
+  msg['To'] = addr
+  msg['Subject'] = 'Network Monitor Info'
+  server = smtplib.SMTP('smtp.gmail.com', 587)
+  server.starttls()
+  server.login(addr, config['password'])
+  server.send_message(msg)
+  server.quit()
 
 
 def create_graph():
