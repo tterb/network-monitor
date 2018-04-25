@@ -86,7 +86,7 @@ def log(down, up):
       log = json.load(f)
   else:
     log = {}
-  now = strftime("%Y-%m-%d_%H:%M", gmtime())
+  now = strftime("%Y-%m-%d:%H", gmtime())
   log[now] = (down, up)
   with open('log.json','w') as f:
     json.dump(log, f, indent=2)
@@ -114,20 +114,24 @@ def create_graph():
   with open('log.json','r') as f:
     log = json.load(f)
   # range = arange(0.0, 720.0, 1)
-  range = plt.arange(0.0, float(len(log.keys())), 1)
-  down, up = [], []
+  range = plt.arange(0.0, int(len(log.keys())), 1)
+  download, upload = [], []
   for i in log.keys():
-    down.append(int(log[i][0]))
-    up.append(int(log[i][1]))
-  plt.plot(range, down, label="Download")
-  plt.plot(range, up, label="Upload")
+    download.append(int(log[i][0]))
+    upload.append(int(log[i][1]))
+  x = [i for i in log.keys()]
+  # y = [str(log[i][0]) for i in log.keys()]
+  # plt.plot(x,download,label="DL")
+  plt.plot(range, download, label="Download")
+  plt.plot(range, upload, label="Upload")
+  plt.gcf().autofmt_xdate()
   # target = plt.plot(range, [85]*len(log.keys()), label="D/L Target")
   # plt.setp(target, color='r', ls='--', linewidth=0.5)
-  plt.xlim(0, len(log.keys()))
-  plt.ylim(0, max(down)+5)
+  # plt.xlim(0, len(log.keys()))
+  plt.ylim(0, max(download)+5)
   plt.xlabel('Time')
   plt.ylabel('Speed')
-  plt.legend(loc='upper left')
+  plt.legend(loc='upper right')
   plt.title('Network Data Speeds')
   # plt.gcf().autofmt_xdate()
   # plt.figtext(0.075, 0.04, 'Max Download: '+str(max(down)), horizontalalignment='left')
