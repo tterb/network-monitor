@@ -1,5 +1,6 @@
-import sys, os, re, argparse, subprocess, json, smtplib
+import sys, os, glob, re, argparse, subprocess, json, smtplib
 import pylab as plt
+# from requests import get
 from time import gmtime, strftime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -28,6 +29,11 @@ def main():
 
   if args.quiet:
     sys.stdout = open(os.devnull, 'w')
+
+  os.chdir("./")
+  imgs = [file for file in glob.glob("*.png")]
+  print(sort(imgs))
+  sys.exit()
 
   # Get current data speeds
   try:
@@ -102,6 +108,9 @@ def sendEmail(body):
   msg['From'] = addr
   msg['To'] = conf['recipient']
   msg['Subject'] = 'Network Monitor Info'
+  # with open('screen3.png', 'rb') as fp:
+  #   img_data = fp.read()
+  # msg.add_attachment(img_data, maintype='image', subtype='png')
   try:
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
@@ -124,11 +133,19 @@ def create_graph():
     download.append(int(log[i][0]))
     upload.append(int(log[i][1]))
   x = [i for i in log.keys()]
-  # y = [str(log[i][0]) for i in log.keys()]
-  # plt.plot(x,download,label="DL")
+
+  # dates = log.keys()
+  # plt.plot(dates, download, label="Download")
+  # plt.plot(dates, upload, label="Upload")
   plt.plot(range, download, label="Download")
   plt.plot(range, upload, label="Upload")
-  plt.gcf().autofmt_xdate()
+  # plt.gcf().autofmt_xdate()
+  # dates = log.keys()
+  # plt.xticks(plt.array(log.keys()))
+  # plt.xticks(rotation=70)
+  # plt.set_xticklabels(log.keys(), rotation=70, fontsize='small')
+  # myFmt = mdates.DateFormatter('%Y-%m-%d:%H')
+  # plt.gca().xaxis.set_major_formatter(myFmt)
   # target = plt.plot(range, [85]*len(log.keys()), label="D/L Target")
   # plt.setp(target, color='r', ls='--', linewidth=0.5)
   # plt.xlim(0, len(log.keys()))
@@ -137,9 +154,6 @@ def create_graph():
   plt.ylabel('Speed')
   plt.legend(loc='upper right')
   plt.title('Network Data Speeds')
-  # plt.gcf().autofmt_xdate()
-  # plt.figtext(0.075, 0.04, 'Max Download: '+str(max(down)), horizontalalignment='left')
-  # plt.figtext(0.075, 0.01, 'Max Upload: '+str(max(up)), horizontalalignment='left')
   plt.grid(True)
   plt.savefig(str(strftime("%Y-%m-%d_%H:%M", gmtime()))+'.png')
   plt.show()
