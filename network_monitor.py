@@ -1,4 +1,4 @@
-import sys, os, glob, re, argparse, subprocess, json, smtplib
+import sys, os, re, argparse, subprocess, json, smtplib
 import pylab as plt
 # from requests import get
 from time import gmtime, strftime
@@ -29,11 +29,6 @@ def main():
 
   if args.quiet:
     sys.stdout = open(os.devnull, 'w')
-
-  os.chdir("./")
-  imgs = [file for file in glob.glob("*.png")]
-  print(sort(imgs))
-  sys.exit()
 
   # Get current data speeds
   try:
@@ -133,7 +128,6 @@ def create_graph():
     download.append(int(log[i][0]))
     upload.append(int(log[i][1]))
   x = [i for i in log.keys()]
-
   # dates = log.keys()
   # plt.plot(dates, download, label="Download")
   # plt.plot(dates, upload, label="Upload")
