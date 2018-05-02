@@ -1,9 +1,8 @@
-import sys, os, re, argparse, subprocess, json, smtplib
+import sys, os, re, glob, argparse, subprocess, json, smtplib
 import pylab as plt
 # from requests import get
 from time import gmtime, strftime
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from email.message import EmailMessage
 
 
 def main():
@@ -60,6 +59,7 @@ def main():
 
   if args.graph:
     create_graph()
+    # sendEmail('Network graph', sorted([file for file in glob.glob("*.png")])[0])
 
 
 def test_speed():
@@ -92,20 +92,22 @@ def log(down, up):
     json.dump(log, f, indent=2)
 
 
-def sendEmail(body):
+def sendEmail(body, img=None):
   with open('config.json','r') as f:
     conf = json.load(f)
   if 'recipient' not in conf:
     print("Email functionality has not been configured. If you'd like to enable this functionality, run the program with the '--config' option.")
     sys.exit()
   addr = 'network.monitor337@gmail.com'
-  msg = MIMEText(body)
+  msg = EmailMessage()
   msg['From'] = addr
   msg['To'] = conf['recipient']
   msg['Subject'] = 'Network Monitor Info'
-  # with open('screen3.png', 'rb') as fp:
-  #   img_data = fp.read()
-  # msg.add_attachment(img_data, maintype='image', subtype='png')
+  msg.set_content(body)
+  if img:
+    with open(img, 'rb') as fp:
+      img_data = fp.read()
+    msg.add_attachment(img_data, maintype='image', subtype='png')
   try:
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
