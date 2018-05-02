@@ -1,8 +1,6 @@
-import sys, os, argparse, json, pyspeedtest, random, smtplib
+import sys, os, re, argparse, subprocess, json, smtplib
 import pylab as plt
 from time import gmtime, strftime
-from twilio.rest import Client
-from subprocess import check_output
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -65,10 +63,13 @@ def main():
 
   if args.graph:
     create_graph()
+    sendEmail(f'Download: '+str(current[0])+" mbps \nUpload: "+str(current[1])+' mbps')
+
 
 def test_speed():
-  speed = pyspeedtest.SpeedTest()
-  return (float("%0.2f"%(speed.download()/1000000)), float("%0.2f"%(speed.upload()/1000000)))
+  ip = get('https://api.ipify.org').text
+  speed = subprocess.check_output(['python', 'speedtest.py', '--simple']).decode()
+  return tuple([float(re.findall('\d+\.\d+', i)[0]) for i in speed.splitlines()[1:]])
 
 
 def config():
@@ -87,6 +88,7 @@ def log(down, up):
   else:
     log = {}
   now = strftime("%Y-%m-%d:%H", gmtime())
+  # now = str(dt.datetime.now()).split('.')[0]
   log[now] = (down, up)
   with open('log.json','w') as f:
     json.dump(log, f, indent=2)
