@@ -55,11 +55,7 @@ def main():
     status.append(('upload','above'))
 
   for j,i in enumerate(status):
-    print(str(i[0].capitalize())+': ', end='')
-    if 'below' in i:
-      print(str(current[j])+' mbps')
-    else:
-      print(str(current[j])+' mbps')
+    print(str(i[0].capitalize())+': '+str(current[j])+' mbps')
 
   if args.graph:
     create_graph()
@@ -67,17 +63,20 @@ def main():
 
 
 def test_speed():
-  ip = get('https://api.ipify.org').text
+  # ip = get('https://api.ipify.org').text
   speed = subprocess.check_output(['python', 'speedtest.py', '--simple']).decode()
   return tuple([float(re.findall('\d+\.\d+', i)[0]) for i in speed.splitlines()[1:]])
 
 
 def config():
+  if os.path.exists('config.yml'):
+    conf = json.load(open('config.json'))
+  else:
+    conf = dict()
   conf['download'] = float(input('Download (mbps): '))
   conf['upload'] = float(input('Upload (mbps): '))
   if 'y' in input('Enable email notifications? (y/n): ').lower():
-    conf['email'] = input('Email address: ')
-    conf['password'] = input('password: ')
+    conf['recipient'] = input('Email:')
   return conf
 
 
@@ -87,8 +86,8 @@ def log(down, up):
       log = json.load(f)
   else:
     log = {}
-  now = strftime("%Y-%m-%d:%H", gmtime())
-  # now = str(dt.datetime.now()).split('.')[0]
+  # now = strftime("%Y-%m-%d:%H", gmtime())
+  now = str(dt.datetime.now()).split('.')[0]
   log[now] = (down, up)
   with open('log.json','w') as f:
     json.dump(log, f, indent=2)
@@ -96,18 +95,23 @@ def log(down, up):
 
 def sendEmail(body):
   with open('config.json','r') as f:
-    config = json.load(f)
-  if 'email' not in config:
+    conf = json.load(f)
+  if 'recipient' not in conf:
     print("Email functionality has not been configured. If you'd like to enable this functionality, run the program with the '--config' option.")
     sys.exit()
-  addr = config['email']
+  addr = 'network.monitor337@gmail.com'
   msg = MIMEText(body)
   msg['From'] = addr
-  msg['To'] = addr
+  msg['To'] = conf['recipient']
   msg['Subject'] = 'Network Monitor Info'
-  server = smtplib.SMTP('smtp.gmail.com', 587)
+  try:
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+  except:
+    print("Something went wrong")
+  # make connection secure
   server.starttls()
-  server.login(addr, config['password'])
+  server.login(addr,'cst337project')
   server.send_message(msg)
   server.quit()
 
