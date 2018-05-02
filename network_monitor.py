@@ -59,7 +59,6 @@ def main():
 
   if args.graph:
     create_graph()
-    sendEmail(f'Download: '+str(current[0])+" mbps \nUpload: "+str(current[1])+' mbps')
 
 
 def test_speed():
@@ -86,8 +85,7 @@ def log(down, up):
       log = json.load(f)
   else:
     log = {}
-  # now = strftime("%Y-%m-%d:%H", gmtime())
-  now = str(dt.datetime.now()).split('.')[0]
+  now = strftime("%Y-%m-%d:%H", gmtime())
   log[now] = (down, up)
   with open('log.json','w') as f:
     json.dump(log, f, indent=2)
