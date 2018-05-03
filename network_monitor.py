@@ -1,6 +1,5 @@
 import sys, os, re, glob, argparse, subprocess, json, smtplib
 import pylab as plt
-# from requests import get
 from time import gmtime, strftime
 from email.message import EmailMessage
 
@@ -10,6 +9,7 @@ def main():
   parser.add_argument('-c', '--config', action="store_true", help='set the target download and upload speeds (mbps)')
   parser.add_argument('-q', '--quiet', action="store_true", help='logs network speed without output')
   parser.add_argument('-g', '--graph', action="store_true", help='displays a graph of data speeds for the last 30 days')
+  parser.add_argument('-r', '--report', action="store_true", help='sends an email with a report of your network data speeds for the last 30 days')
   args = parser.parse_args()
   network_status = True
   if args.config:
@@ -43,30 +43,23 @@ def main():
 
   # Log current data speeds
   log(current[0], current[1])
-
-  status = []
-  if current[0] < target['download']:
-    status.append(('download','below'))
-  else:
-    status.append(('download','above'))
-  if current[1] < target['upload']:
-    status.append(('upload','below'))
-  else:
-    status.append(('upload','above'))
-
+  status = ['download','upload']
   for j,i in enumerate(status):
     print(str(i[0].capitalize())+': '+str(current[j])+' mbps')
 
   if args.graph:
+    plt = create_graph()
+    plt.show()
+  
+  if args.report:
     create_graph()
-    # sendEmail('Network graph', sorted([file for file in glob.glob("*.png")])[0])
+    sendEmail(f"{report(target)} \nThe following graph shows your network speed for the month", sorted([file for file in glob.glob("*.png")])[0])
+    sys.exit()
 
 
 def test_speed():
-  # ip = get('https://api.ipify.org').text
   speed = subprocess.check_output(['python', 'speedtest.py', '--simple']).decode()
   return tuple([float(re.findall('\d+\.\d+', i)[0]) for i in speed.splitlines()[1:]])
-
 
 def config():
   if os.path.exists('config.yml'):
@@ -120,31 +113,38 @@ def sendEmail(body, img=None):
   server.quit()
 
 
+def report(target):
+  with open('log.json','r') as f:
+    log = json.load(f)
+  if len(log.keys()) > 720:
+    keys = log.keys()[-720:]
+  else: 
+    keys = log.keys()
+  down, up = 0, 0
+  for i in keys:
+    if float(log[i][0]) < target['download']:
+      down += 1
+    if float(log[i][1]) < target['upload']:
+      up += 1
+  down_perc = round(down/len(keys)*100,2)
+  up_perc = round(up/len(keys)*100,2)
+  return f'{down_perc}% of the recordings fell below your target download speeds. \n {up_perc}% of the recordings fell below your target upload speeds.\n'
+
 def create_graph():
   with open('log.json','r') as f:
     log = json.load(f)
-  # range = arange(0.0, 720.0, 1)
-  range = plt.arange(0.0, int(len(log.keys())), 1)
+  if len(log.keys()) >=720:
+    keys = log.keys()[-720:]
+  else: 
+    keys = log.keys()
+  range = plt.arange(0.0, len(keys), 1)
   download, upload = [], []
   for i in log.keys():
     download.append(int(log[i][0]))
     upload.append(int(log[i][1]))
   x = [i for i in log.keys()]
-  # dates = log.keys()
-  # plt.plot(dates, download, label="Download")
-  # plt.plot(dates, upload, label="Upload")
   plt.plot(range, download, label="Download")
   plt.plot(range, upload, label="Upload")
-  # plt.gcf().autofmt_xdate()
-  # dates = log.keys()
-  # plt.xticks(plt.array(log.keys()))
-  # plt.xticks(rotation=70)
-  # plt.set_xticklabels(log.keys(), rotation=70, fontsize='small')
-  # myFmt = mdates.DateFormatter('%Y-%m-%d:%H')
-  # plt.gca().xaxis.set_major_formatter(myFmt)
-  # target = plt.plot(range, [85]*len(log.keys()), label="D/L Target")
-  # plt.setp(target, color='r', ls='--', linewidth=0.5)
-  # plt.xlim(0, len(log.keys()))
   plt.ylim(0, max(download)+5)
   plt.xlabel('Time')
   plt.ylabel('Speed')
@@ -152,7 +152,7 @@ def create_graph():
   plt.title('Network Data Speeds')
   plt.grid(True)
   plt.savefig(str(strftime("%Y-%m-%d_%H:%M", gmtime()))+'.png')
-  plt.show()
+  return plt
 
 
 if __name__ == "__main__":
