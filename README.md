@@ -32,4 +32,7 @@ crontab -e
 
 # Schedules the program to run once an hour
 0 * * * * cd /path_to_directory/network_monitor.py && python network_monitor.py -q
+
+# Schedules a monthly report to be sent via email
+0 0 1 * * cd /path_to_directory/network_monitor.py && python network_monitor.py -q -r
 ```
