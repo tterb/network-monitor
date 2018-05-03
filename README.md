@@ -19,6 +19,8 @@ optional arguments:
   -c, --config  set the target download and upload speeds (mbps)
   -q, --quiet   logs network speed without output
   -g, --graph   displays a graph of data speeds for the last 30 days
+  -r, --report  sends an email with a report of your network data speeds for
+                the last 30 days
 ```
 
 
