@@ -53,7 +53,8 @@ def main():
   
   if args.report:
     create_graph()
-    sendEmail(f"{report(target)} \nThe following graph shows your network speed for the month", sorted([file for file in glob.glob("*.png")])[0])
+    report = report(target)
+    sendEmail(str(report)+"\nThe following graph shows your network speed for the month", sorted([file for file in glob.glob("*.png")])[0])
     sys.exit()
 
 
@@ -98,8 +99,8 @@ def sendEmail(body, img=None):
   msg['Subject'] = 'Network Monitor Info'
   msg.set_content(body)
   if img:
-    with open(img, 'rb') as fp:
-      img_data = fp.read()
+    with open(img, 'rb') as f:
+      img_data = f.read()
     msg.add_attachment(img_data, maintype='image', subtype='png')
   try:
     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -128,7 +129,7 @@ def report(target):
       up += 1
   down_perc = round(down/len(keys)*100,2)
   up_perc = round(up/len(keys)*100,2)
-  return f'{down_perc}% of the recordings fell below your target download speeds. \n {up_perc}% of the recordings fell below your target upload speeds.\n'
+  return str(down_perc)+"% of the recordings fell below your target download speeds. \n"+str(up_perc)+"% of the recordings fell below your target upload speeds.\n"
 
 def create_graph():
   with open('log.json','r') as f:
