@@ -21,15 +21,6 @@ optional arguments:
   -g, --graph   displays a graph of data speeds for the last 30 days
 ```
 
-### Arguments
-
-| **Arguments**  | **Function**                              |
-|:--------------:|-------------------------------------------|
-| `-c, --config` | set the target download and upload speeds |
-| `-q, --quiet`  | logs network speed without output         |
-| `-g, --graph`  | creates and displays a graph of log data  |
-| `-h, --help`   | displays available usage options          |
-
 
 ## Setup
 For the most beneficial results, you should initially execute the program with the `--config` argument to set your target network upload and download speeds, as well as the email that will be used to contact you of network downtime.
