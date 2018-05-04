@@ -1,5 +1,2 @@
-pandas==0.22.0
 matplotlib==2.1.2
-pyspeedtest==1.2.7
-plotly==2.5.1
 simplejson==3.14.0
