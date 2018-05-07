@@ -38,9 +38,8 @@ def main():
   except:
     current = (0,0)
 
-  with open('log.json','r') as f:
+  with open(os.getcwd()+'/log.json','r') as f:
     log = json.load(f)
-    
   index = -1
   keys = list(log.keys())
   prev = keys[index]
@@ -67,8 +66,8 @@ def main():
   
   if args.report:
     create_graph()
-    report = report(target)
-    sendEmail(str(report)+"\nThe following graph shows your network speed for the month", sorted([file for file in glob.glob("*.png")])[0])
+    rep = report(target)
+    sendEmail(str(rep)+"\nThe following graph shows your network speed for the month", sorted([file for file in glob.glob("*.png")])[0])
     sys.exit()
 
 
@@ -157,13 +156,14 @@ def create_graph():
   download = [int(log[i][0]) for i in log.keys()]
   upload = [int(log[i][1]) for i in log.keys()]
   x = [i for i in range(len(log.keys()))]
-  size = (8, 4)
+  # size = (8, 4)
   if len(log.keys()) > 100: 
-    size = (len(log.keys())//20, max(download)//25)
+    # size = (len(log.keys())//20, max(download)//25)
     ax = plt.axes()
     ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
     ax.xaxis.set_minor_locator(ticker.MultipleLocator(1))
-  plt.figure(figsize=size)
+  # plt.figure(figsize=size)
+  plt.figure()
   x = np.arange(0.0, len(keys), 1)
   plt.plot(np.arange(0.0, len(keys), 1), download, label="Download")
   plt.plot(np.arange(0.0, len(keys), 1), upload, label="Upload")
@@ -175,6 +175,8 @@ def create_graph():
   plt.ylabel('Speed (mbps)')
   plt.legend(loc='upper right')
   plt.grid(True)
+  plt.gcf().subplots_adjust(bottom=0.15)
+  plt.tight_layout()
   plt.savefig(str(strftime("%Y-%m-%d_%H:%M", gmtime()))+'.png')
   return plt
 
