@@ -47,10 +47,9 @@ def main():
     while 0 in log[prev]:
       index -= 1
       prev = keys[index]
-    print(keys[index])
     hr = datetime.strptime(keys[index].split(':')[1], "%H").strftime("%I:%M %p")
     d = [int(i) for i in keys[index].split(':')[0].split('-')]
-    msg = "Your network is back online.\nWe've recorded that your network has been down since "+hr+", on "+months[d[1]]+" "+str(d[2])+"."
+    msg = "Your network is back online.\nWe've recorded that your network has been down since "+hr+", on "+months[d[1]-1]+" "+str(d[2])+"."
     print(msg)
     sendEmail(msg)
     
@@ -156,14 +155,13 @@ def create_graph():
   download = [int(log[i][0]) for i in log.keys()]
   upload = [int(log[i][1]) for i in log.keys()]
   x = [i for i in range(len(log.keys()))]
-  # size = (8, 4)
+  size = (8, 4)
   if len(log.keys()) > 100: 
-    # size = (len(log.keys())//20, max(download)//25)
+    size = (len(log.keys())//20, max(download)//25)
     ax = plt.axes()
     ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
     ax.xaxis.set_minor_locator(ticker.MultipleLocator(1))
-  # plt.figure(figsize=size)
-  plt.figure()
+  plt.figure(figsize=size)
   x = np.arange(0.0, len(keys), 1)
   plt.plot(np.arange(0.0, len(keys), 1), download, label="Download")
   plt.plot(np.arange(0.0, len(keys), 1), upload, label="Upload")
@@ -175,7 +173,7 @@ def create_graph():
   plt.ylabel('Speed (mbps)')
   plt.legend(loc='upper right')
   plt.grid(True)
-  plt.gcf().subplots_adjust(bottom=0.15)
+  plt.gcf().subplots_adjust(bottom=0.25)
   plt.tight_layout()
   plt.savefig(str(strftime("%Y-%m-%d_%H:%M", gmtime()))+'.png')
   return plt
