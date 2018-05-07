@@ -1,5 +1,7 @@
 import sys, os, re, glob, argparse, subprocess, json, smtplib
-import pylab as plt
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from time import gmtime, strftime
 from email.message import EmailMessage
 
@@ -63,7 +65,7 @@ def test_speed():
   return tuple([float(re.findall('\d+\.\d+', i)[0]) for i in speed.splitlines()[1:]])
 
 def config():
-  if os.path.exists('config.yml'):
+  if os.path.exists('./config.json'):
     conf = json.load(open('config.json'))
   else:
     conf = dict()
@@ -131,6 +133,7 @@ def report(target):
   up_perc = round(up/len(keys)*100,2)
   return str(down_perc)+"% of the recordings fell below your target download speeds. \n"+str(up_perc)+"% of the recordings fell below your target upload speeds.\n"
 
+
 def create_graph():
   with open('log.json','r') as f:
     log = json.load(f)
@@ -138,19 +141,26 @@ def create_graph():
     keys = log.keys()[-720:]
   else: 
     keys = log.keys()
-  range = plt.arange(0.0, len(keys), 1)
-  download, upload = [], []
-  for i in log.keys():
-    download.append(int(log[i][0]))
-    upload.append(int(log[i][1]))
-  x = [i for i in log.keys()]
-  plt.plot(range, download, label="Download")
-  plt.plot(range, upload, label="Upload")
-  plt.ylim(0, max(download)+5)
-  plt.xlabel('Time')
-  plt.ylabel('Speed')
-  plt.legend(loc='upper right')
+  download = [int(log[i][0]) for i in log.keys()]
+  upload = [int(log[i][1]) for i in log.keys()]
+  x = [i for i in range(len(log.keys()))]
+  size = (8, 4)
+  if len(log.keys()) > 100: 
+    size = (len(log.keys())//20, max(download)//25)
+    ax = plt.axes()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
+    ax.xaxis.set_minor_locator(ticker.MultipleLocator(1))
+  plt.figure(figsize=size)
+  x = np.arange(0.0, len(keys), 1)
+  plt.plot(np.arange(0.0, len(keys), 1), download, label="Download")
+  plt.plot(np.arange(0.0, len(keys), 1), upload, label="Upload")
+  plt.xticks(x, log.keys(), rotation='65')
+  plt.xlim(0, len(log.keys()))
+  plt.ylim(0, max(download)+10)
   plt.title('Network Data Speeds')
+  plt.xlabel('Time')
+  plt.ylabel('Speed (mbps)')
+  plt.legend(loc='upper right')
   plt.grid(True)
   plt.savefig(str(strftime("%Y-%m-%d_%H:%M", gmtime()))+'.png')
   return plt
